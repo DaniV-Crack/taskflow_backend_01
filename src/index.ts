@@ -1,57 +1,48 @@
-import express, { Application, Request, Response } from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-// Importar rutas
-import healthRouter from './routes/health';
-// Cargar variables de entorno (SIEMPRE primero)
+import express, { Application, Request, Response } from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger";
+import healthRouter from "./routes/health";
+import usersRouter from "./routes/users";
+import projectsRouter from "./routes/projects";
+
 dotenv.config();
-// Crear la aplicación Express con tipado TypeScript
+
 const app: Application = express();
 const PORT: number = parseInt(process.env.PORT || "3000", 10);
-// ────────────────────────────────────────────────────
-// MIDDLEWARES GLOBALES
-// Los middlewares se ejecutan en ORDEN para cada request
-// ────────────────────────────────────────────────────
-// Permitir requests desde otros dominios (necesario para el frontend)
+
 app.use(cors());
-// Parsear JSON del body de los requests
 app.use(express.json());
-// Parsear form data del body
 app.use(express.urlencoded({ extended: true }));
-// ────────────────────────────────────────────────────
-// RUTAS
-// ────────────────────────────────────────────────────
-// Ruta de health check
-app.use('/health', healthRouter);
-// Ruta raíz informativa
-app.get('/', (req: Request, res: Response) => {
- res.json({
- project: 'TaskFlow API',
- version: '1.0.0',
- clase: 1,
- description: 'Servidor Express con TypeScript + PostgreSQL',
- endpoints: {
- health: 'GET /health',
- },
- });
+app.use("/health", healthRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/projects", projectsRouter);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.get("/", (req: Request, res: Response) => {
+  res.json({
+    project: "TaskFlow API",
+    version: "1.1.0",
+    clase: 2,
+    endpoints: {
+      health: "GET /health",
+      users: "/api/users",
+      projects: "/api/projects",
+    },
+  });
 });
-// ────────────────────────────────────────────────────
-// MANEJO DE RUTAS NO ENCONTRADAS (404)
-// ────────────────────────────────────────────────────
+
 app.use((req: Request, res: Response) => {
- res.status(404).json({
- error: 'Ruta no encontrada',
- path: req.path,
- method: req.method,
- });
+  res.status(404).json({ error: "Ruta no encontrada", path: req.path });
 });
-// ────────────────────────────────────────────────────
-// INICIAR EL SERVIDOR
-// ────────────────────────────────────────────────────
+
 app.listen(PORT, () => {
- console.log('\n🚀 TaskFlow API iniciada');
- console.log(`📡 Puerto: ${PORT}`);
- console.log(`🔍 Health: http://localhost:${PORT}/health`);
- console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}\n`);
+  console.log(`\n🚀 TaskFlow API v2 — http://localhost:${PORT}`);
+  console.log(`👥 Usuarios: http://localhost:${PORT}/api/users`);
+  console.log(`📁 Proyectos: http://localhost:${PORT}/api/projects`);
+  console.log(`📖 Swagger: http://localhost:${PORT}/api-docs\n`);
 });
+
 export default app;
