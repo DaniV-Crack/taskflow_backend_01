@@ -9,9 +9,13 @@ const router = Router();
  *   get:
  *     tags: [Proyectos]
  *     summary: Lista todos los proyectos
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de proyectos obtenida correctamente
+ *       500:
+ *         description: Error interno del servidor
  */
 router.get('/', projectsController.getAll);
 
@@ -21,6 +25,8 @@ router.get('/', projectsController.getAll);
  *   get:
  *     tags: [Proyectos]
  *     summary: Obtiene un proyecto por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -30,8 +36,12 @@ router.get('/', projectsController.getAll);
  *     responses:
  *       200:
  *         description: Proyecto encontrado
+ *       400:
+ *         description: ID inválido
  *       404:
  *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.get('/:id', projectsController.getById);
 
@@ -41,6 +51,8 @@ router.get('/:id', projectsController.getById);
  *   post:
  *     tags: [Proyectos]
  *     summary: Crea un nuevo proyecto
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -59,7 +71,11 @@ router.get('/:id', projectsController.getById);
  *       201:
  *         description: Proyecto creado correctamente
  *       400:
- *         description: Faltan campos requeridos o el ownerId no existe
+ *         description: Faltan campos requeridos
+ *       404:
+ *         description: El ownerId no existe
+ *       500:
+ *         description: Error interno del servidor
  */
 router.post('/', projectsController.create);
 
@@ -69,6 +85,8 @@ router.post('/', projectsController.create);
  *   put:
  *     tags: [Proyectos]
  *     summary: Actualiza un proyecto
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -89,8 +107,12 @@ router.post('/', projectsController.create);
  *     responses:
  *       200:
  *         description: Proyecto actualizado correctamente
+ *       400:
+ *         description: ID inválido o no hay campos para actualizar
  *       404:
  *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.put('/:id', projectsController.update);
 
@@ -100,6 +122,8 @@ router.put('/:id', projectsController.update);
  *   delete:
  *     tags: [Proyectos]
  *     summary: Elimina un proyecto
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -109,8 +133,12 @@ router.put('/:id', projectsController.update);
  *     responses:
  *       204:
  *         description: Proyecto eliminado correctamente
+ *       400:
+ *         description: ID inválido
  *       404:
  *         description: Proyecto no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.delete('/:id', projectsController.remove);
 

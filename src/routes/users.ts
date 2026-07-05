@@ -9,9 +9,13 @@ const router = Router();
  *   get:
  *     tags: [Usuarios]
  *     summary: Lista todos los usuarios
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de usuarios obtenida correctamente
+ *       500:
+ *         description: Error interno del servidor
  */
 router.get('/', usersController.getAll);
 
@@ -21,6 +25,8 @@ router.get('/', usersController.getAll);
  *   get:
  *     tags: [Usuarios]
  *     summary: Obtiene un usuario por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -30,8 +36,12 @@ router.get('/', usersController.getAll);
  *     responses:
  *       200:
  *         description: Usuario encontrado
+ *       400:
+ *         description: ID inválido
  *       404:
  *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.get('/:id', usersController.getById);
 
@@ -41,6 +51,8 @@ router.get('/:id', usersController.getById);
  *   post:
  *     tags: [Usuarios]
  *     summary: Crea un nuevo usuario
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -63,6 +75,8 @@ router.get('/:id', usersController.getById);
  *         description: Faltan campos requeridos
  *       409:
  *         description: El email ya está registrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.post('/', usersController.create);
 
@@ -72,6 +86,8 @@ router.post('/', usersController.create);
  *   put:
  *     tags: [Usuarios]
  *     summary: Actualiza un usuario
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -93,8 +109,14 @@ router.post('/', usersController.create);
  *     responses:
  *       200:
  *         description: Usuario actualizado correctamente
+ *       400:
+ *         description: ID inválido o no hay campos para actualizar
  *       404:
  *         description: Usuario no encontrado
+ *       409:
+ *         description: El email ya está registrado por otro usuario
+ *       500:
+ *         description: Error interno del servidor
  */
 router.put('/:id', usersController.update);
 
@@ -104,6 +126,8 @@ router.put('/:id', usersController.update);
  *   delete:
  *     tags: [Usuarios]
  *     summary: Elimina un usuario
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -113,8 +137,12 @@ router.put('/:id', usersController.update);
  *     responses:
  *       204:
  *         description: Usuario eliminado correctamente
+ *       400:
+ *         description: ID inválido
  *       404:
  *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 router.delete('/:id', usersController.remove);
 

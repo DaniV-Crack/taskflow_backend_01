@@ -1,61 +1,70 @@
-import express, { Application, Request, Response } from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./config/swagger";
-import healthRouter from "./routes/health";
-import authRouter from "./routes/auth";
-import usersRouter from "./routes/users";
-import projectsRouter from "./routes/projects";
-import tasksRouter from "./routes/tasks";
-import commentsRouter from "./routes/comments";
-import { errorMiddleware } from "./middleware/error.middleware";
+import express, { Application, Request, Response } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import healthRouter from './routes/health';
+import usersRoute from './routes/users';
+import projectsRoute from './routes/projects';
+import tasksRoute from './routes/tasks';
+import authRoute from './routes/auth';
+import commentsRoute from './routes/comments';
+import swaggerSpec from './config/swagger';
+import { createAuthMiddleware } from './middleware/auth.middleware';
+import { success, error } from './utils/api-response';
 
 dotenv.config();
 
 const app: Application = express();
-const PORT = parseInt(process.env.PORT || "3000", 10);
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// ── Middlewares globales ──────────────────────────
+app.use(cors({
+  origin: [
+    'http://localhost:5173',  // Vite dev server (puerto por defecto)
+    'http://localhost:5174',  // Vite usa 5174 si 5173 está ocupado
+    'http://localhost:4173',  // Vite preview
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/health", healthRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/users", usersRouter);
-app.use("/api/projects", projectsRouter);
-app.use("/api/tasks", tasksRouter);
-app.use("/api/comments", commentsRouter);
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// ── Documentación Swagger ────────────────────────
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.get("/", (_req: Request, res: Response) => {
-  res.json({
-    project: "TaskFlow API",
-    version: "1.2.0",
-    clase: 3,
-    endpoints: [
-      "/api/auth",
-      "/api/users",
-      "/api/projects",
-      "/api/tasks",
-      "/api/comments",
-    ],
-  });
+// Auth global para /api (excluye POST /auth/register y POST /auth/login)
+const authMw = createAuthMiddleware();
+app.use('/api', authMw);
+
+// ── Rutas ────────────────────────────────────────
+app.use('/health', healthRouter);
+app.use('/api/users', usersRoute);
+app.use('/api/projects', projectsRoute); 
+app.use('/api/tasks', tasksRoute); 
+app.use('/api/auth', authRoute);
+app.use('/api/comments', commentsRoute);
+
+
+// Ruta raíz informativa
+app.get('/', (req: Request, res: Response) => {
+  success(res, {
+    version: '1.0.0',
+    docs: '/api-docs',
+  }, 'TaskFlow API');
 });
 
-app.use((_req: Request, res: Response) =>
-  res.status(404).json({ error: "Ruta no encontrada" }),
-);
-// El error middleware SIEMPRE va al final con 4 parámetros
+// ── Middleware de errores no encontrados ─────────
+app.use((req: Request, res: Response) => {
+  error(res, 'Ruta no encontrada', 404);
+});
 
-app.use(errorMiddleware);
-
+// ── Iniciar servidor ─────────────────────────────
 app.listen(PORT, () => {
-  console.log(`\n🚀 TaskFlow API v3 — http://localhost:${PORT}`);
-  console.log(`🔐 Auth: /api/auth/register /api/auth/login`);
-  console.log(`✅ Tasks: /api/tasks`);
-  console.log(`💬 Comments: /api/comments\n`);
-  console.log(`📖 Swagger: http://localhost:${PORT}/api-docs\n`);
+  console.log(`🚀 Servidor TaskFlow corriendo en http://localhost:${PORT}`);
+  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
 });
 
 export default app;

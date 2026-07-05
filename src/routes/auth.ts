@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { authController } from '../controllers/auth.controller';
-import { authMiddleware } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { registerSchema, loginSchema } from '../schemas/auth.schemas';
 
@@ -86,6 +85,6 @@ router.post('/login', validate(loginSchema), authController.login);
  *       401:
  *         description: Token no proporcionado o inválido
  */
-router.get('/me', authMiddleware, authController.me);
+router.get('/me', authController.me);
 
 export default router;

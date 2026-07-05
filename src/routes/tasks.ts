@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { tasksController } from '../controllers/tasks.controller';
-import { authMiddleware } from '../middleware/auth.middleware';
 import { validate } from '../middleware/validate.middleware';
 import { createTaskSchema, updateTaskSchema } from '../schemas/task.schemas';
 
@@ -31,7 +30,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/project/:projectId', authMiddleware, tasksController.getByProject);
+router.get('/project/:projectId', tasksController.getByProject);
 
 /**
  * @openapi
@@ -59,7 +58,7 @@ router.get('/project/:projectId', authMiddleware, tasksController.getByProject);
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id', authMiddleware, tasksController.getById);
+router.get('/:id', tasksController.getById);
 
 /**
  * @openapi
@@ -105,7 +104,7 @@ router.get('/:id', authMiddleware, tasksController.getById);
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/', authMiddleware, validate(createTaskSchema), tasksController.create);
+router.post('/', validate(createTaskSchema), tasksController.create);
 
 /**
  * @openapi
@@ -153,7 +152,7 @@ router.post('/', authMiddleware, validate(createTaskSchema), tasksController.cre
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/:id', authMiddleware, validate(updateTaskSchema), tasksController.update);
+router.put('/:id', validate(updateTaskSchema), tasksController.update);
 
 /**
  * @openapi
@@ -183,6 +182,6 @@ router.put('/:id', authMiddleware, validate(updateTaskSchema), tasksController.u
  *       500:
  *         description: Error interno del servidor
  */
-router.delete('/:id', authMiddleware, tasksController.remove);
+router.delete('/:id', tasksController.remove);
 
 export default router;

@@ -38,12 +38,14 @@ export const tasksService = {
       where: { id: data.projectId },
     });
     if (!project) throw { status: 404, message: "Proyecto no encontrado" };
+
     // 2. Verificar que quien crea sea el dueño del proyecto
     if (project.ownerId !== requesterId)
       throw {
         status: 403,
         message: "Solo el dueño del proyecto puede crear tareas",
       };
+      
     // 3. Crear la tarea con estado por defecto "TODO"
     return prisma.task.create({
       data: {

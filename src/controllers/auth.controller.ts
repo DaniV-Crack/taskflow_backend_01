@@ -1,31 +1,29 @@
 import { Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { RegisterDto, LoginDto } from "../types/auth.types";
+import { success, error } from "../utils/api-response";
 
 export const authController = {
   async register(req: Request, res: Response): Promise<void> {
     try {
       const result = await authService.register(req.body as RegisterDto);
-      res.status(201).json(result);
+      success(res, result, "Usuario registrado exitosamente", 201);
     } catch (e: any) {
-      res
-        .status(e?.status ?? 500)
-        .json({ error: e?.message ?? "Error al registrar" });
+      error(res, e?.message ?? "Error al registrar", e?.status ?? 500);
     }
   },
+  
   async login(req: Request, res: Response): Promise<void> {
     try {
       const result = await authService.login(req.body as LoginDto);
-      res.json(result);
+      success(res, result, "Inicio de sesión exitoso");
     } catch (e: any) {
-      res
-        .status(e?.status ?? 500)
-        .json({ error: e?.message ?? "Error al iniciar sesión" });
+      error(res, e?.message ?? "Error al iniciar sesión", e?.status ?? 500);
     }
   },
 
   // req.user fue adjuntado por el authMiddleware
   async me(req: Request, res: Response): Promise<void> {
-    res.json({ data: req.user });
+    success(res, req.user, "Usuario autenticado");
   },
 };

@@ -1,37 +1,47 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { JwtPayload } from "../types/auth.types";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { JwtPayload } from '../types/auth.types';
+import { apiResponse } from '../utils/api-response';
 
-// Esto le dice a TypeScript que Express.Request tiene un campo 'user' opcional
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-    }
-  }
+const EXCLUDED_ROUTES = [
+  { method: 'POST', path: '/auth/register' },
+  { method: 'POST', path: '/auth/login' },
+  { method: 'GET', path: '/health' },
+];
+
+function isExcluded(req: Request): boolean {
+  return EXCLUDED_ROUTES.some(
+    (route) => route.method === req.method && req.path.endsWith(route.path),
+  );
 }
 
-export const authMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void => {
-  const authHeader = req.headers.authorization;
-  
-  // Verificar que el header existe y tiene el formato correcto
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Token de autenticación requerido" });
-    return;
-  }
-  
-  // Extraer el token (eliminar el prefijo 'Bearer ')
-  const token = authHeader.split(" ")[1];
-  try {
-    // Verificar la firma del token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-    req.user = decoded; // Adjuntar datos del usuario
-    next(); // Continuar al siguiente middleware/handler
-  } catch {
-    res.status(401).json({ error: "Token inválido o expirado" });
-  }
-};
+export function createAuthMiddleware() {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (isExcluded(req)) {
+      next();
+      return;
+    }
+
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json(apiResponse(401, 'Token de autenticación requerido', undefined, 'INVALID_TOKEN'));
+      return;
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    if (!token) {
+      res.status(401).json(apiResponse(401, 'Token no proporcionado', undefined, 'INVALID_TOKEN'));
+      return;
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+      req.user = decoded;
+      next();
+    } catch {
+      res.status(401).json(apiResponse(401, 'Token inválido o expirado', undefined, 'INVALID_TOKEN'));
+    }
+  };
+}
